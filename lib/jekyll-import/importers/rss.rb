@@ -41,9 +41,7 @@ module JekyllImport
 
         rss.items.each do |item|
           formatted_date = item.date.strftime("%Y-%m-%d")
-          post_name = item.title.split(%r{ |!|/|:|&|-|$|,}).map do |i|
-            i.downcase if i != ""
-          end.compact.join("-")
+          post_name = Jekyll::Utils.slugify(item.title, mode: 'latin')
           name = "#{formatted_date}-#{post_name}"
 
           header = {
@@ -60,8 +58,11 @@ module JekyllImport
           output = ""
 
           body.each do |row|
-            output += item.send(row)
+            output += item.send(row).to_s
           end
+
+          output.strip!
+          output = item.content_encoded if output.empty?
 
           FileUtils.mkdir_p("_posts")
 
